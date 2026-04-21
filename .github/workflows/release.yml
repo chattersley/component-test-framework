@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  packages: write
 
 jobs:
   release-please:
@@ -21,7 +22,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  build:
+  publish:
     runs-on: ubuntu-latest
     needs: [release-please]
     if: needs.release-please.outputs.release_created == 'true'
@@ -31,13 +32,19 @@ jobs:
         with:
           node-version: "24"
           cache: npm
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@chattersley"
       - name: Install dependencies
         run: npm ci --ignore-scripts
       - name: Build
         run: npm run build
-      - name: Package dist
+      - name: Publish to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+      - name: Package dist tarball
         run: tar -czf component-test-framework-dist.tar.gz -C dist .
-      - name: Upload to release
+      - name: Attach tarball to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ needs.release-please.outputs.tag_name }}" component-test-framework-dist.tar.gz

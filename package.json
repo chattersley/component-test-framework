@@ -1,9 +1,16 @@
 {
-  "name": "component-test-framework",
+  "name": "@chattersley/component-test-framework",
   "version": "0.1.0",
   "description": "Reusable Cucumber-based component test framework for APIs, workers, and UIs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chattersley/component-test-framework.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "files": [
     "dist"
   ],
