@@ -1,0 +1,48 @@
+{
+  "name": "component-test-framework",
+  "version": "0.1.0",
+  "description": "Reusable Cucumber-based component test framework for APIs, workers, and UIs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix . && prettier --write 'src/**/*.{ts,tsx}'",
+    "test": "run-s test:*",
+    "test:lint": "eslint .",
+    "test:unit": "vitest run --passWithNoTests",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@cucumber/cucumber": ">=11.0.0",
+    "@playwright/test": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "pg": "^8.16.0",
+    "ioredis": "^5.6.1"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.3.0",
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.52.0",
+    "@types/pg": "^8.15.4",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.4.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.8.2",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.3"
+  }
+}
