@@ -3,3 +3,4 @@ dist
 coverage
 generated
 .env
+package.json.orig
