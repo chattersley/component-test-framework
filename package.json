@@ -21,7 +21,9 @@
     "test": "run-s test:*",
     "test:lint": "eslint .",
     "test:unit": "vitest run --passWithNoTests",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "pub": "node scripts/publish.mjs",
+    "publish:restore": "node scripts/restore-after-publish.mjs"
   },
   "peerDependencies": {
     "@cucumber/cucumber": ">=11.0.0",
