@@ -12,6 +12,15 @@ Given(
 )
 
 Given(
+  'the WireMock stub {string} is registered',
+  async function (this: ComponentTestWorld, relPath: string) {
+    const rootDir =
+      this.config.wiremockStubsDir ?? path.resolve(this.config.fixturesDir, 'wiremock')
+    await this.wiremock.addStubFromFile(relPath, rootDir)
+  },
+)
+
+Given(
   'the {word} API returns HTTP {int}',
   async function (this: ComponentTestWorld, provider: string, status: number) {
     await this.wiremock.addStub({

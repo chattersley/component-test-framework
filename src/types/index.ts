@@ -35,6 +35,11 @@ export interface FrameworkConfig {
   redisUrl?: string
   /** Path to the consumer's fixtures directory. */
   fixturesDir: string
+  /**
+   * Root directory for WireMock stub mapping files registered at runtime via
+   * {@link WireMockClient.addStubFromFile}. Defaults to `{fixturesDir}/wiremock`.
+   */
+  wiremockStubsDir?: string
   /** Consumer-provided OpenAPI operation map. */
   operationMap?: OperationMap
   /** Tables to truncate between scenarios (with CASCADE). */
