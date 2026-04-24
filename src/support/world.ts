@@ -4,7 +4,7 @@ import type { Page, Browser, BrowserContext } from '@playwright/test'
 import type { FrameworkConfig, CallRecord, OperationMap, UIStateSnapshot } from '../types'
 import type { WireMockClient } from '../clients/wiremock-client'
 import type { DbClient } from '../clients/db-client'
-import type { RedisClient } from '../clients/redis-client'
+import type { RedisClient, PubSubSubscription } from '../clients/redis-client'
 import type { BasePage } from '../pages/base.page'
 
 /**
@@ -31,6 +31,11 @@ export class ComponentTestWorld extends World {
     body: unknown
     headers: Record<string, string>
   } | null = null
+
+  // --- Valkey / Redis assertion state ---
+  lastRedisValue?: string
+  lastRedisMessage?: string
+  activeSubscription?: PubSubSubscription
 
   // --- Call tracking ---
   callCounts: Map<string, number> = new Map()
@@ -97,6 +102,9 @@ export class ComponentTestWorld extends World {
     this.accessToken = null
     this.refreshToken = null
     this.lastResponse = null
+    this.lastRedisValue = undefined
+    this.lastRedisMessage = undefined
+    this.activeSubscription = undefined
     this.callCounts.clear()
     this.callHistory = []
     this.uiStateSnapshots = []

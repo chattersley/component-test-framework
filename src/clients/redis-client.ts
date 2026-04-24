@@ -6,8 +6,10 @@ import Redis from 'ioredis'
  */
 export class RedisClient {
   private client: Redis
+  private url: string
 
   constructor(url: string) {
+    this.url = url
     this.client = new Redis(url)
   }
 
@@ -41,8 +43,84 @@ export class RedisClient {
     return result === 1
   }
 
+  /**
+   * Poll until `key` is set, returning its value. Throws if the timeout
+   * elapses first. Default 30s timeout, 250ms poll interval — matches the
+   * cadence of the DB wait-for-row step.
+   */
+  async waitForKey(
+    key: string,
+    { timeoutMs = 30_000, intervalMs = 250 }: { timeoutMs?: number; intervalMs?: number } = {},
+  ): Promise<string> {
+    const start = Date.now()
+    while (Date.now() - start < timeoutMs) {
+      const val = await this.client.get(key)
+      if (val !== null) return val
+      await new Promise((resolve) => setTimeout(resolve, intervalMs))
+    }
+    throw new Error(`Timed out after ${timeoutMs}ms waiting for Redis key "${key}"`)
+  }
+
+  /**
+   * Subscribe to one or more pub/sub channels and return a handle that lets
+   * the caller wait for messages. Each call opens a dedicated connection so
+   * SUBSCRIBE doesn't interfere with the main client's commands.
+   */
+  async subscribe(...channels: string[]): Promise<PubSubSubscription> {
+    const subClient = new Redis(this.url)
+    const buffer: { channel: string; message: string }[] = []
+    const waiters: ((msg: { channel: string; message: string }) => void)[] = []
+
+    subClient.on('message', (channel, message) => {
+      const entry = { channel, message }
+      const waiter = waiters.shift()
+      if (waiter) {
+        waiter(entry)
+      } else {
+        buffer.push(entry)
+      }
+    })
+
+    await subClient.subscribe(...channels)
+
+    return {
+      async waitForMessage(timeoutMs = 30_000) {
+        if (buffer.length > 0) {
+          return buffer.shift()!
+        }
+        return new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            const idx = waiters.indexOf(waiter)
+            if (idx >= 0) waiters.splice(idx, 1)
+            reject(
+              new Error(
+                `Timed out after ${timeoutMs}ms waiting for pub/sub message on ${channels.join(', ')}`,
+              ),
+            )
+          }, timeoutMs)
+          const waiter = (msg: { channel: string; message: string }) => {
+            clearTimeout(timer)
+            resolve(msg)
+          }
+          waiters.push(waiter)
+        })
+      },
+      async close() {
+        await subClient.quit()
+      },
+    }
+  }
+
   /** Close the connection. */
   async close(): Promise<void> {
     await this.client.quit()
   }
+}
+
+/** Handle returned by {@link RedisClient.subscribe}. */
+export interface PubSubSubscription {
+  /** Await the next message on any subscribed channel, or throw on timeout. */
+  waitForMessage(timeoutMs?: number): Promise<{ channel: string; message: string }>
+  /** Close the subscription's dedicated connection. */
+  close(): Promise<void>
 }
