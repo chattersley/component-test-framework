@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/chattersley/component-test-framework/compare/v0.1.3...v0.1.4) (2026-04-24)
+
+
+### Features
+
+* Valkey wait/pubsub primitives and spawn helper ([f44424c](https://github.com/chattersley/component-test-framework/commit/f44424cce593f24b1bcf097202a2fefad843c494))
+* Valkey wait/pubsub primitives and spawn helper ([76f5f69](https://github.com/chattersley/component-test-framework/commit/76f5f698abb5eaeba644bed0b70a39adab6e7782))
+
 ## [0.1.3](https://github.com/chattersley/component-test-framework/compare/v0.1.2...v0.1.3) (2026-04-24)
 
 
