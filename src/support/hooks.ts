@@ -1,4 +1,4 @@
-import { Before, After, setWorldConstructor } from '@cucumber/cucumber'
+import { Before, BeforeAll, After, setWorldConstructor } from '@cucumber/cucumber'
 import { chromium } from '@playwright/test'
 import { ComponentTestWorld } from './world'
 import { WireMockClient } from '../clients/wiremock-client'
@@ -35,6 +35,13 @@ export function registerHooks(config: FrameworkConfig): void {
   }
   if (config.redisUrl) {
     redis = new RedisClient(config.redisUrl)
+  }
+
+  // --- Before the suite: wait for WireMock to accept admin requests ---
+  if (config.wiremockUrl) {
+    BeforeAll({ timeout: 30_000 }, async function () {
+      await wiremock.waitForReady(30_000)
+    })
   }
 
   // --- Before every scenario ---

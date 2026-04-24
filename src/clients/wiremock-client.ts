@@ -47,6 +47,52 @@ export class WireMockClient {
     }
   }
 
+  /**
+   * Load a stub mapping from `{rootDir}/{relPath}` and register it. If the
+   * mapping's response has a `bodyFileName` but no inline `body`, the
+   * referenced file is read from disk and inlined before POSTing to the admin
+   * API — WireMock itself resolves `bodyFileName` from its `__files` mount,
+   * which isn't always available when stubs are registered at runtime.
+   */
+  async addStubFromFile(relPath: string, rootDir: string): Promise<void> {
+    const raw = await fs.promises.readFile(path.join(rootDir, relPath), 'utf-8')
+    const stub = JSON.parse(raw) as {
+      response?: { bodyFileName?: string; body?: string }
+    }
+    if (stub.response?.bodyFileName && !stub.response.body) {
+      const bodyFileName = stub.response.bodyFileName
+      try {
+        stub.response.body = await fs.promises.readFile(path.join(rootDir, bodyFileName), 'utf-8')
+      } catch {
+        // Fall back to WireMock's standard layout: sibling __files dir next to mappings/.
+        const fallback = path.join(
+          path.dirname(path.join(rootDir, relPath)),
+          '..',
+          '__files',
+          path.basename(bodyFileName),
+        )
+        stub.response.body = await fs.promises.readFile(fallback, 'utf-8')
+      }
+      delete stub.response.bodyFileName
+    }
+    await this.addStub(stub)
+  }
+
+  /** Wait for the WireMock admin API to respond to /__admin/health. */
+  async waitForReady(timeoutMs: number): Promise<void> {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(`${this.baseUrl}/__admin/health`)
+        if (res.ok) return
+      } catch {
+        /* not up yet */
+      }
+      await new Promise((r) => setTimeout(r, 250))
+    }
+    throw new Error(`WireMock at ${this.baseUrl} did not become ready within ${timeoutMs}ms`)
+  }
+
   /** Remove a stub mapping by its UUID. */
   async removeStub(id: string): Promise<void> {
     await fetch(`${this.baseUrl}/__admin/mappings/${id}`, { method: 'DELETE' })

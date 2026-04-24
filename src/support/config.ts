@@ -12,6 +12,7 @@ export function loadConfig(overrides?: Partial<FrameworkConfig>): FrameworkConfi
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
     fixturesDir: process.env.FIXTURES_DIR ?? './fixtures',
+    wiremockStubsDir: process.env.WIREMOCK_STUBS_DIR,
     ...overrides,
   }
 }
