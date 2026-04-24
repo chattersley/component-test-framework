@@ -25,6 +25,7 @@ export { BasePage } from './pages/base.page'
 // Consumers should import the ones they need in their support setup.
 export * as apiSteps from './steps/api/generic-api.steps'
 export * as responseSteps from './steps/common/response-assertion.steps'
+export * as dbAssertionSteps from './steps/common/db-assertion.steps'
 export * as wiremockSteps from './steps/common/wiremock.steps'
 export * as serviceSteps from './steps/worker/generic-service.steps'
 export * as uiSteps from './steps/ui/generic-ui.steps'
