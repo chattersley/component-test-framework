@@ -106,6 +106,42 @@ When(
   },
 )
 
+/**
+ * Poll until `count` rows matching the predicate exist. The predicate is
+ * interpolated verbatim, so callers must not pass untrusted input — this is
+ * meant for feature-file authored assertions only.
+ */
+When(
+  'I wait for {int} record(s) in {word} matching {string}',
+  async function (this: ComponentTestWorld, count: number, table: string, whereClause: string) {
+    assert.ok(this.db, 'Database client not configured')
+
+    const maxWait = 30_000
+    const interval = 500
+    const start = Date.now()
+
+    while (Date.now() - start < maxWait) {
+      const result = await this.db.query<{ count: string }>(
+        `SELECT COUNT(*)::text AS count FROM ${table} WHERE ${whereClause}`,
+      )
+      const actual = Number(result.rows[0]?.count ?? '0')
+      if (actual >= count) return
+      await new Promise((resolve) => setTimeout(resolve, interval))
+    }
+
+    throw new Error(`Timed out waiting for ${count} record(s) in ${table} WHERE ${whereClause}`)
+  },
+)
+
+Then('the {word} table is empty', async function (this: ComponentTestWorld, table: string) {
+  assert.ok(this.db, 'Database client not configured')
+  const result = await this.db.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count FROM ${table}`,
+  )
+  const actual = Number(result.rows[0]?.count ?? '0')
+  assert.equal(actual, 0, `expected ${table} to be empty, has ${actual} row(s)`)
+})
+
 function assertDeepPartialMatch(actual: unknown, expected: unknown, path = ''): void {
   if (expected === null || expected === undefined) {
     return

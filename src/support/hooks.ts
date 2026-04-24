@@ -79,8 +79,16 @@ export function registerHooks(config: FrameworkConfig): void {
     this.browser = null
   })
 
-  // --- After every scenario: DB cleanup ---
+  // --- After every scenario: DB cleanup + stray pub/sub subscription ---
   After(async function (this: ComponentTestWorld) {
+    if (this.activeSubscription) {
+      try {
+        await this.activeSubscription.close()
+      } catch {
+        /* best-effort */
+      }
+      this.activeSubscription = undefined
+    }
     if (db && config.cleanupTables && config.cleanupTables.length > 0) {
       await db.truncateTables(config.cleanupTables)
     }

@@ -12,11 +12,14 @@ export { ComponentTestWorld } from './support/world'
 export { loadConfig } from './support/config'
 export { loadFixture, listFixtures } from './support/fixtures'
 export { registerHooks } from './support/hooks'
+export { spawnServiceUnderTest } from './support/process'
+export type { SpawnServiceOptions, SpawnServiceHandle } from './support/process'
 
 // Clients
 export { WireMockClient } from './clients/wiremock-client'
 export { DbClient } from './clients/db-client'
 export { RedisClient } from './clients/redis-client'
+export type { PubSubSubscription } from './clients/redis-client'
 
 // Pages
 export { BasePage } from './pages/base.page'
@@ -32,6 +35,7 @@ export * as sseSteps from './steps/api/sse.steps'
 export * as responseSteps from './steps/common/response-assertion.steps'
 export * as dbAssertionSteps from './steps/common/db-assertion.steps'
 export * as wiremockSteps from './steps/common/wiremock.steps'
+export * as redisSteps from './steps/common/redis.steps'
 export * as serviceSteps from './steps/worker/generic-service.steps'
 export * as uiSteps from './steps/ui/generic-ui.steps'
 
